@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Sample SAM Template for sam-app
+
+Globals:
+  Function:
+    Timeout: 120
+    CodeUri: ./src/ShortenUrl/
+    Runtime: dotnetcore2.1
+
+Resources:
+  ShortenUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: ShortenUrl::ShortenUrl.ShortenUrlFunctionBootstrap::FunctionHandler
+      Policies: AmazonDynamoDBFullAccess
+      Events:
+        ShortenUrlApi:
+          Type: Api 
+          Properties:
+            Path: /shorten
+            Method: post
+  FetchUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: ShortenUrl::ShortenUrl.FetchShortUrlFunctionBootstrap::FunctionHandler
+      Policies: AmazonDynamoDBFullAccess
+      Events:
+        ShortenUrlApi:
+          Type: Api 
+          Properties:
+            Path: /fetch/{key}
+            Method: get
+Outputs:
+  ShortenApi:
+    Description: "API Gateway endpoint URL for Prod stage for Shorten URL function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/shorten/"
+  FetchApi:
+    Description: "API Gateway endpoint URL for Prod stage for Fetch Long URL function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/fetch/{key}/"
+  ShortenUrlFunction:
+    Description: "Shorten URL Lambda Function ARN"
+    Value: !GetAtt ShortenUrlFunction.Arn
+  ShortenUrlFunctionIamRole:
+    Description: "Implicit IAM Role created for Shorten URL function"
+    Value: !GetAtt ShortenUrlFunctionRole.Arn
