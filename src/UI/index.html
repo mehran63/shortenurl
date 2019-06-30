@@ -14,7 +14,7 @@
         $.ajaxSetup({
             beforeSend: function(xhr) {
                 if (xhr.overrideMimeType) {
-                    xhr.overrideMimeType("application/json");
+                    xhr.overrideMimeType("text/plain");
                 }
             }
         });
@@ -28,15 +28,13 @@
             $.ajax({
                 type        : 'POST',
                 url         : 'https://4ylb1evqt9.execute-api.ap-southeast-2.amazonaws.com/Prod/shorten/',
-				data        : $('#url_input').val()
-                data        : JSON.stringify({ 'url_long' : $('#url_input').val(), 'cdn_prefix': window.location.hostname }),
-                contentType : 'application/json; charset=utf-8',
-                dataType    : 'json',
+				data        : $('#url_input').val(),
+                contentType : 'text/plain; charset=utf-8',
                 encode      : true
             })
             .done(function(data,textStatus, jqXHR) {
                 $('#url_input_submit').prop('disabled', false);
-                if (textStatus != '200') {
+                if (textStatus != 'success') {
                     $('#url-group').addClass('has-error'); // add the error class to show red input
                     $('#url-error').show().text('Error.' + textStatus + ':' + data); // add the actual error message under our input
                 } else {
@@ -46,10 +44,10 @@
                     $('#url_short').val('https://4ylb1evqt9.execute-api.ap-southeast-2.amazonaws.com/Prod/fetch/' + data).focus().select();
                 }
             })
-            .fail(function(_, textStatus, errorThrown) {
+            .fail(function(data, textStatus, errorThrown) {
                 $('#url_input_submit').prop('disabled', false);
                 $('#url-group').addClass('has-error'); // add the error class to show red input
-                $('#url-error').show().text('Error.' + textStatus + ':' + data); // add the actual error message under our input
+                $('#url-error').show().text('Error.' + textStatus + ':' + data + ':' + errorThrown); // add the actual error message under our input
             });
 
             // stop the form from submitting the normal way and refreshing the page

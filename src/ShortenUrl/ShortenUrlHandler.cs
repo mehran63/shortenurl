@@ -12,31 +12,25 @@ namespace ShortenUrl
     public class ShortenUrlHandler : IHttpRequestHandler
     {
         private readonly IShortUrlManager shortUrlManager;
+        private readonly ILongUrlValidator longUrlValidator;
 
         public ShortenUrlHandler(
-            IShortUrlManager shortUrlManager)
+            IShortUrlManager shortUrlManager,
+            ILongUrlValidator longUrlValidator)
         {
             this.shortUrlManager = shortUrlManager;
+            this.longUrlValidator = longUrlValidator;
         }
 
         public async Task<APIGatewayProxyResponse> Handle(APIGatewayProxyRequest request)
         {
             var longUrl = request.Body;
 
-            if (string.IsNullOrEmpty(longUrl))
+            if(!longUrlValidator.Validate(longUrl, out string error))
             {
                 return new APIGatewayProxyResponse
                 {
-                    Body = "No body!",
-                    StatusCode = (int)HttpStatusCode.BadRequest
-                };
-            }
-
-            if (longUrl.Length > 3000)
-            {
-                return new APIGatewayProxyResponse
-                {
-                    Body = "Maximum valid body length is 3000!",
+                    Body = "Request body is invalid, "+ error,
                     StatusCode = (int)HttpStatusCode.BadRequest
                 };
             }
@@ -47,7 +41,12 @@ namespace ShortenUrl
             {
                 Body = shortUrlKey,
                 StatusCode = (int)HttpStatusCode.OK,
-                Headers = new Dictionary<string, string> { { "Content-Type", "text/plain" } }
+                Headers = new Dictionary<string, string> {
+                    { "Content-Type", "text/plain" },
+                    { "Access-Control-Allow-Origin", "*" },
+                    { "Access-Control-Allow-Headers", "*"},
+                    { "Access-Control-Allow-Methods", "POST"}
+                }
             };
         }
     }

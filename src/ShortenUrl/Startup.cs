@@ -40,6 +40,8 @@ namespace ShortenUrl
             serviceCollection.AddTransient<IShortUrlGenerator, ShortUrlGenerator>();
             serviceCollection.AddTransient<IShortUrlManager, ShortUrlManager>();
             serviceCollection.AddTransient<IRandomStringGenerator, RandomStringGenerator>();
+            serviceCollection.AddTransient<IDateTimeProvider, DateTimeProvider>();
+            serviceCollection.AddTransient<ILongUrlValidator, LongUrlValidator>();
             serviceCollection.AddTransient<IDynamoDBContext>(BuildDynamoDBContext);
 
             serviceCollection.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();

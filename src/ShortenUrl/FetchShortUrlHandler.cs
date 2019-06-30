@@ -23,9 +23,14 @@ namespace ShortenUrl
         {
             var shortUrlKey = request.Path.TrimEnd('/').Split('/').LastOrDefault();
 
-            if (string.IsNullOrEmpty(shortUrlKey))
+            if (string.IsNullOrEmpty(shortUrlKey)
+                || shortUrlKey.Length > 10)
             {
-                return new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.BadRequest };
+                return new APIGatewayProxyResponse
+                {
+                    Body = "No short url key is specified or it is longer than 10 characters",
+                    StatusCode = (int)HttpStatusCode.BadRequest
+                };
             }
 
             var longURl = await shortUrlManager.GetLongUrl(shortUrlKey);
