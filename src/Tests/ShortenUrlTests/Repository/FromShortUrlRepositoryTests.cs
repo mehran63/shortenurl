@@ -1,4 +1,5 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
+using Amazon.Util;
 using FluentAssertions;
 using Moq;
 using ShortenUrl.DataModel;
@@ -18,8 +19,8 @@ namespace ShortenUrlTests.Repository
         public async Task FetchExistingLongUrl()
         {
             //arrange
-            var longUrl = "a long url";
-            var shortUrlKey = "a short url key";
+            const string longUrl = "a long url";
+            const string shortUrlKey = "a short url key";
             var dynamoDBContextMock = new Mock<IDynamoDBContext>();
             dynamoDBContextMock
                 .Setup(m => m.LoadAsync<FromShortUrl>(shortUrlKey, It.IsAny<CancellationToken>()))
@@ -38,7 +39,7 @@ namespace ShortenUrlTests.Repository
         public async Task FetchNonExistingLongUrl()
         {
             //arrange
-            var shortUrlKey = "a short url key";
+            const string shortUrlKey = "a short url key";
             var dynamoDBContextMock = new Mock<IDynamoDBContext>();
             dynamoDBContextMock
                 .Setup(m => m.LoadAsync<FromShortUrl>(shortUrlKey, It.IsAny<CancellationToken>()))
@@ -57,20 +58,25 @@ namespace ShortenUrlTests.Repository
         public async Task StoreAnEntry()
         {
             //arrange
-            var longUrl = "a long url";
-            var shortUrlKey = "a short url key";
+            const string longUrl = "a long url";
+            const string shortUrlKey = "a short url key";
+            var expireOn = new DateTime(2019, 7, 1, 8, 13, 10);
+            int epochSeconds = AWSSDKUtils.ConvertToUnixEpochSeconds(expireOn);
             var dynamoDBContextMock = new Mock<IDynamoDBContext>();
 
             var sut = new FromShortUrlRepository(dynamoDBContextMock.Object);
 
             //act
-            await sut.Store(longUrl, shortUrlKey);
+            await sut.Store(longUrl, shortUrlKey, expireOn);
 
             //assert
             dynamoDBContextMock
                .Verify(
                    m => m.SaveAsync(
-                       It.Is<FromShortUrl>(u => u.ShortUrlKey == shortUrlKey && u.LongUrl == longUrl),
+                       It.Is<FromShortUrl>(u => 
+                            u.ShortUrlKey == shortUrlKey && 
+                            u.LongUrl == longUrl &&
+                            u.ExpireOn == epochSeconds.ToString()),
                        It.IsAny<CancellationToken>()),
                    Times.Once); ;
         }

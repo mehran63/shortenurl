@@ -1,7 +1,9 @@
-﻿namespace ShortenUrl.BusinessLogic
+﻿using System.Threading.Tasks;
+
+namespace ShortenUrl.BusinessLogic
 {
     public interface IShortUrlGenerator
     {
-        string GenerateShortUrlKey(string longUrl);
+        Task<string> GenerateShortUrlKey(string longUrl);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
+using Amazon.Util;
 using ShortenUrl.DataModel;
 using System;
 using System.Collections.Generic;
@@ -24,14 +25,23 @@ namespace ShortenUrl.Repository
             return record?.ShortUrlKey;
         }
 
-        public async Task Store(string longUrl, string shortUrlKey)
+        public async Task Store(string longUrl, string shortUrlKey, DateTime expireOn)
         {
+            int epochSeconds = AWSSDKUtils.ConvertToUnixEpochSeconds(expireOn);
             var record = new ToShortUrl
             {
                 LongUrl = longUrl,
-                ShortUrlKey = shortUrlKey
-            }
-            ;
+                ShortUrlKey = shortUrlKey,
+                ExpireOn = epochSeconds.ToString()
+            };
+            await context.SaveAsync(record);
+        }
+
+        public async Task UpdateAsync(string longUrl, DateTime expireOn)
+        {
+            var record = await context.LoadAsync<ToShortUrl>(longUrl);
+            int epochSeconds = AWSSDKUtils.ConvertToUnixEpochSeconds(expireOn);
+            record.ExpireOn = epochSeconds.ToString();
             await context.SaveAsync(record);
         }
     }

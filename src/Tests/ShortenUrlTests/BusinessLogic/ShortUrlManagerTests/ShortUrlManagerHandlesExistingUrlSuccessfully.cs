@@ -2,6 +2,7 @@
 using Moq;
 using ShortenUrl.BusinessLogic;
 using ShortenUrl.Repository;
+using ShortenUrl.Settings;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,8 +13,13 @@ namespace ShortenUrlTests.BusinessLogic.ShortUrlManagerTests
 {
     public class ShortUrlManagerHandlesExistingUrlSuccessfully : IAsyncLifetime
     {
-        private readonly string longUrl = "a long url";
-        private readonly string shortUrlKey = "a key";
+        private const string longUrl = "a long url";
+        private const string shortUrlKey = "a key";
+        private readonly ShortUrlManagerSettings shortUrlManagerSettings = new ShortUrlManagerSettings()
+        {
+            ToShortUrlTtlDays = 1,
+            FromShortUrlTtlDays = 7
+        };
         private Mock<IToShortUrlRepository> toShortUrlRepositoryMock;
         private Mock<IFromShortUrlRepository> fromShortUrlRepositoryMock;
         private Mock<IShortUrlGenerator> shortUrlGeneratorMock;
@@ -46,11 +52,14 @@ namespace ShortenUrlTests.BusinessLogic.ShortUrlManagerTests
             fromShortUrlRepositoryMock = new Mock<IFromShortUrlRepository>();
 
             shortUrlGeneratorMock = new Mock<IShortUrlGenerator>();
+            var dateTimeProviderMock = new Mock<IDateTimeProvider>();
 
             return new ShortUrlManager(
                 toShortUrlRepositoryMock.Object,
                 fromShortUrlRepositoryMock.Object,
-                shortUrlGeneratorMock.Object);
+                shortUrlGeneratorMock.Object,
+                shortUrlManagerSettings,
+                dateTimeProviderMock.Object);
         }
 
         public async Task<string> WhenShortUrlRequested()
@@ -68,7 +77,7 @@ namespace ShortenUrlTests.BusinessLogic.ShortUrlManagerTests
         public void ThenNothingStoredInToShortUrlRepository()
         {
             toShortUrlRepositoryMock.Verify(
-                m => m.Store(It.IsAny<string>(), It.IsAny<string>()),
+                m => m.Store(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DateTime>()),
                 Times.Never);
         }
 
@@ -76,7 +85,7 @@ namespace ShortenUrlTests.BusinessLogic.ShortUrlManagerTests
         public void ThenNothingStoredInFromShortUrlRepository()
         {
             fromShortUrlRepositoryMock.Verify(
-               m => m.Store(It.IsAny<string>(), It.IsAny<string>()),
+               m => m.Store(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DateTime>()),
                Times.Never);
         }
 

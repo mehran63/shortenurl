@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ShortenUrl.BusinessLogic;
 using ShortenUrl.Repository;
+using ShortenUrl.Settings;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -38,8 +39,16 @@ namespace ShortenUrl
             serviceCollection.AddTransient<IFromShortUrlRepository, FromShortUrlRepository>();
             serviceCollection.AddTransient<IShortUrlGenerator, ShortUrlGenerator>();
             serviceCollection.AddTransient<IShortUrlManager, ShortUrlManager>();
-            serviceCollection.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
+            serviceCollection.AddTransient<IRandomStringGenerator, RandomStringGenerator>();
             serviceCollection.AddTransient<IDynamoDBContext>(BuildDynamoDBContext);
+
+            serviceCollection.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
+            //TODO: Improve by reading from environment variables or Parameter Store
+            serviceCollection.AddSingleton(new ShortUrlManagerSettings()
+            {
+                ToShortUrlTtlDays = 1,
+                FromShortUrlTtlDays = 7
+            });
         }
 
         private static IDynamoDBContext BuildDynamoDBContext(IServiceProvider serviceProvider)

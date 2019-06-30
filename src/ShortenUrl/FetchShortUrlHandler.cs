@@ -5,18 +5,19 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
+using ShortenUrl.BusinessLogic;
 using ShortenUrl.Repository;
 
 namespace ShortenUrl
 {
     public class FetchShortUrlHandler : IHttpRequestHandler
     {
-        private readonly IFromShortUrlRepository fromShortUrlRepository;
+        private readonly IShortUrlManager shortUrlManager;
 
         public FetchShortUrlHandler(
-            IFromShortUrlRepository fromShortUrlRepository)
+            IShortUrlManager shortUrlManager)
         {
-            this.fromShortUrlRepository = fromShortUrlRepository;
+            this.shortUrlManager = shortUrlManager;
         }
         public async Task<APIGatewayProxyResponse> Handle(APIGatewayProxyRequest request)
         {
@@ -27,7 +28,7 @@ namespace ShortenUrl
                 return new APIGatewayProxyResponse { StatusCode = (int)HttpStatusCode.BadRequest };
             }
 
-            var longURl = await fromShortUrlRepository.FetchLongUrl(shortUrlKey);
+            var longURl = await shortUrlManager.GetLongUrl(shortUrlKey);
 
             if (string.IsNullOrEmpty(longURl))
             {

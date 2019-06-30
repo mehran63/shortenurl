@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace ShortenUrl.Repository
 {
@@ -6,6 +7,8 @@ namespace ShortenUrl.Repository
     {
         Task<string> FetchLongUrl(string shortUrlKey);
 
-        Task Store(string longUrl, string shortUrlKey);
+        Task Update(string shortUrlKey, DateTime expireOn);
+
+        Task Store(string longUrl, string shortUrlKey, DateTime expireOn);
     }
 }

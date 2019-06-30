@@ -12,5 +12,7 @@ namespace ShortenUrl.DataModel
         public string LongUrl { get; set; }
 
         public string ShortUrlKey { get; set; }
+
+        public string ExpireOn { get; set; }
     }
 }
