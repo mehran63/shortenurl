@@ -19,6 +19,7 @@ namespace ShortenUrl
         {
             this.shortUrlManager = shortUrlManager;
         }
+
         public async Task<APIGatewayProxyResponse> Handle(APIGatewayProxyRequest request)
         {
             var shortUrlKey = request.Path.TrimEnd('/').Split('/').LastOrDefault();

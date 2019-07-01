@@ -13,10 +13,16 @@ namespace ShortenUrl
     {
         private readonly IShortUrlManager shortUrlManager;
         private readonly ILongUrlValidator longUrlValidator;
+        private readonly Dictionary<string, string> responseHeaders = new Dictionary<string, string> {
+                    { "Content-Type", "text/plain" },
+                    { "Access-Control-Allow-Origin", "*" },
+                    { "Access-Control-Allow-Headers", "*"},
+                    { "Access-Control-Allow-Methods", "POST"}
+                };
 
         public ShortenUrlHandler(
-            IShortUrlManager shortUrlManager,
-            ILongUrlValidator longUrlValidator)
+                IShortUrlManager shortUrlManager,
+                ILongUrlValidator longUrlValidator)
         {
             this.shortUrlManager = shortUrlManager;
             this.longUrlValidator = longUrlValidator;
@@ -26,12 +32,13 @@ namespace ShortenUrl
         {
             var longUrl = request.Body;
 
-            if(!longUrlValidator.Validate(longUrl, out string error))
+            if (!longUrlValidator.Validate(longUrl, out string error))
             {
                 return new APIGatewayProxyResponse
                 {
-                    Body = "Request body is invalid, "+ error,
-                    StatusCode = (int)HttpStatusCode.BadRequest
+                    Body = "Request body is invalid, " + error,
+                    StatusCode = (int)HttpStatusCode.BadRequest,
+                    Headers = responseHeaders
                 };
             }
 
@@ -41,12 +48,7 @@ namespace ShortenUrl
             {
                 Body = shortUrlKey,
                 StatusCode = (int)HttpStatusCode.OK,
-                Headers = new Dictionary<string, string> {
-                    { "Content-Type", "text/plain" },
-                    { "Access-Control-Allow-Origin", "*" },
-                    { "Access-Control-Allow-Headers", "*"},
-                    { "Access-Control-Allow-Methods", "POST"}
-                }
+                Headers = responseHeaders
             };
         }
     }
